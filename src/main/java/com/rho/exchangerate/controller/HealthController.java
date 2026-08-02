@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class HealthController {
 
+    //endpoint api/health, confirms the API is running
     @GetMapping("/health")
     public String health() {
         return "Exchange Rate API is running";

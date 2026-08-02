@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+//JSON returned to the user by the API
 @Data
 @AllArgsConstructor
 public class ExchangeRateResponse {

@@ -5,6 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.Map;
 
+//providers JSON response
 @Data
 public class ProviderRatesResponse {
 

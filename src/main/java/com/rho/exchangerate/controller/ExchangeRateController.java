@@ -1,5 +1,6 @@
 package com.rho.exchangerate.controller;
 
+import com.rho.exchangerate.dto.AllExchangeRatesResponse;
 import com.rho.exchangerate.dto.ExchangeRateResponse;
 import com.rho.exchangerate.service.ExchangeRateService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,11 +20,19 @@ public class ExchangeRateController {
         this.exchangeRateService = exchangeRateService;
     }
 
+    //request to retrieve exchange rates, such as EUR->GBP
     @GetMapping("/{from}/{to}")
     public ExchangeRateResponse getExchangeRate(
             @PathVariable String from,
             @PathVariable String to) {
 
         return exchangeRateService.getExchangeRate(from, to);
+    }
+
+    @GetMapping("/{from}")
+    public AllExchangeRatesResponse getAllRates(
+            @PathVariable String from) {
+
+        return exchangeRateService.getAllRates(from);
     }
 }
