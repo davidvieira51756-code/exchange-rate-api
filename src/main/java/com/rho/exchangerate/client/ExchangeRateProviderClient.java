@@ -4,6 +4,7 @@ import com.rho.exchangerate.dto.ProviderRatesResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.cache.annotation.Cacheable;
 
 @Component
 public class ExchangeRateProviderClient {
@@ -23,8 +24,10 @@ public class ExchangeRateProviderClient {
         this.accessKey = accessKey;
     }
 
-    // Requests the latest exchange rates from th   e external provider.
+    // Requests the latest exchange rates from the external provider.
+    @Cacheable(cacheNames = "latestRates", sync = true)
     public ProviderRatesResponse getLatestRates() {
+
         return restClient.get()
                 // Builds the /live request and adds the API key as a query parameter.
                 .uri(uriBuilder -> uriBuilder
