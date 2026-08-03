@@ -5,6 +5,7 @@ import com.rho.exchangerate.dto.AllExchangeRatesResponse;
 import com.rho.exchangerate.dto.ExchangeRateResponse;
 import com.rho.exchangerate.dto.ProviderRatesResponse;
 import com.rho.exchangerate.dto.ConversionResponse;
+import com.rho.exchangerate.dto.MultipleConversionResponse;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.math.RoundingMode;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.List;
 
 @Service
 public class ExchangeRateService
@@ -138,6 +140,8 @@ public class ExchangeRateService
         ExchangeRateResponse exchangeRate =
                 getExchangeRate(from, to);
 
+
+        // Mutiplies the amount by the exchange rate to get the final value
         BigDecimal convertedAmount = amount
                 .multiply(exchangeRate.getRate())
                 .setScale(10, RoundingMode.HALF_UP);
@@ -148,6 +152,47 @@ public class ExchangeRateService
                 amount,
                 exchangeRate.getRate(),
                 convertedAmount
+        );
+    }
+
+    // Converts an amount from one currency to multiple target currencies.
+    public MultipleConversionResponse convertAmountToMultipleCurrencies(
+            String from,
+            List<String> targetCurrencies,
+            BigDecimal amount) {
+
+        AllExchangeRatesResponse allRates = getAllRates(from);
+
+        Map<String, BigDecimal> conversions = new TreeMap<>();
+
+        for (String targetCurrency : targetCurrencies) {
+
+            String normalizedTarget =
+                    targetCurrency.toUpperCase(Locale.ROOT);
+
+            BigDecimal rate =
+                    allRates.getRates().get(normalizedTarget);
+
+            if (rate == null) {
+                throw new IllegalArgumentException(
+                        "Unsupported currency: " + normalizedTarget
+                );
+            }
+
+            BigDecimal convertedAmount = amount
+                    .multiply(rate)
+                    .setScale(10, RoundingMode.HALF_UP);
+
+            conversions.put(
+                    normalizedTarget,
+                    convertedAmount
+            );
+        }
+
+        return new MultipleConversionResponse(
+                allRates.getBase(),
+                amount,
+                conversions
         );
     }
 }

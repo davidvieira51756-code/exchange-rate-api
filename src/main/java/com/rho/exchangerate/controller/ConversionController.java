@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.rho.exchangerate.dto.MultipleConversionResponse;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/conversions")
@@ -32,5 +34,19 @@ public class ConversionController {
                 to,
                 amount
         );
+    }
+
+    @GetMapping("/multiple")
+    public MultipleConversionResponse convertAmountToMultipleCurrencies(
+            @RequestParam String from,
+            @RequestParam List<String> to,
+            @RequestParam BigDecimal amount) {
+
+        return exchangeRateService
+                .convertAmountToMultipleCurrencies(
+                        from,
+                        to,
+                        amount
+                );
     }
 }
