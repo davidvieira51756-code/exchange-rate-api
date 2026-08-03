@@ -23,7 +23,7 @@ public class ExchangeRateProviderClient {
         this.accessKey = accessKey;
     }
 
-    // Requests the latest exchange rates from the external provider.
+    // Requests the latest exchange rates from th   e external provider.
     public ProviderRatesResponse getLatestRates() {
         return restClient.get()
                 // Builds the /live request and adds the API key as a query parameter.

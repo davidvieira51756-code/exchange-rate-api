@@ -4,6 +4,7 @@ import com.rho.exchangerate.client.ExchangeRateProviderClient;
 import com.rho.exchangerate.dto.AllExchangeRatesResponse;
 import com.rho.exchangerate.dto.ExchangeRateResponse;
 import com.rho.exchangerate.dto.ProviderRatesResponse;
+import com.rho.exchangerate.dto.ConversionResponse;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,27 +23,6 @@ public class ExchangeRateService
 
     public ExchangeRateService(ExchangeRateProviderClient providerClient) {
         this.providerClient = providerClient;
-    }
-
-    //gets the exchange rates
-    public ExchangeRateResponse getExchangeRate(String from, String to) {
-        String normalizedFrom = from.toUpperCase(Locale.ROOT);
-        String normalizedTo = to.toUpperCase(Locale.ROOT);
-
-        ProviderRatesResponse providerResponse = providerClient.getLatestRates();
-        Map<String, BigDecimal> quotes = providerResponse.getQuotes();
-
-        BigDecimal fromRate = findUsdRate(normalizedFrom, quotes);
-        BigDecimal toRate = findUsdRate(normalizedTo, quotes);
-
-        BigDecimal rate = toRate.divide(fromRate, 10, RoundingMode.HALF_UP);
-
-        //delivers the response in uppercase
-        return new ExchangeRateResponse(
-                normalizedFrom,
-                normalizedTo,
-                rate
-        );
     }
 
     // Returns the exchange rate from USD to the requested currency.
@@ -69,6 +49,29 @@ public class ExchangeRateService
 
         return rate;
     }
+
+    //gets the exchange rates
+    public ExchangeRateResponse getExchangeRate(String from, String to) {
+        String normalizedFrom = from.toUpperCase(Locale.ROOT);
+        String normalizedTo = to.toUpperCase(Locale.ROOT);
+
+        ProviderRatesResponse providerResponse = providerClient.getLatestRates();
+        Map<String, BigDecimal> quotes = providerResponse.getQuotes();
+
+        BigDecimal fromRate = findUsdRate(normalizedFrom, quotes);
+        BigDecimal toRate = findUsdRate(normalizedTo, quotes);
+
+        BigDecimal rate = toRate.divide(fromRate, 10, RoundingMode.HALF_UP);
+
+        //delivers the response in uppercase
+        return new ExchangeRateResponse(
+                normalizedFrom,
+                normalizedTo,
+                rate
+        );
+    }
+
+
 
     // Returns all exchange rates using the requested currency as the base.
     public AllExchangeRatesResponse getAllRates(String from) {
@@ -123,6 +126,28 @@ public class ExchangeRateService
         return new AllExchangeRatesResponse(
                 normalizedFrom,
                 calculatedRates
+        );
+    }
+
+    // Converts an amount from one currency to another.
+    public ConversionResponse convertAmount(
+            String from,
+            String to,
+            BigDecimal amount) {
+
+        ExchangeRateResponse exchangeRate =
+                getExchangeRate(from, to);
+
+        BigDecimal convertedAmount = amount
+                .multiply(exchangeRate.getRate())
+                .setScale(10, RoundingMode.HALF_UP);
+
+        return new ConversionResponse(
+                exchangeRate.getFrom(),
+                exchangeRate.getTo(),
+                amount,
+                exchangeRate.getRate(),
+                convertedAmount
         );
     }
 }
