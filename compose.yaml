@@ -1,0 +1,11 @@
+services:
+  exchange-rate-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: exchange-rate-api
+    ports:
+      - "8080:8080"
+    environment:
+      EXCHANGE_RATE_API_BASE_URL: ${EXCHANGE_RATE_API_BASE_URL}
+      EXCHANGE_RATE_API_ACCESS_KEY: ${EXCHANGE_RATE_API_ACCESS_KEY}
