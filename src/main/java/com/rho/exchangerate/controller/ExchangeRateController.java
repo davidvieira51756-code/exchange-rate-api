@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.rho.exchangerate.validation.RequestValidator;
 
 @RestController
 @RequestMapping("/api/rates")
@@ -26,12 +27,17 @@ public class ExchangeRateController {
             @PathVariable String from,
             @PathVariable String to) {
 
+        RequestValidator.validateCurrencyCode(from);
+        RequestValidator.validateCurrencyCode(to);
+
         return exchangeRateService.getExchangeRate(from, to);
     }
 
     @GetMapping("/{from}")
     public AllExchangeRatesResponse getAllRates(
             @PathVariable String from) {
+
+        RequestValidator.validateCurrencyCode(from);
 
         return exchangeRateService.getAllRates(from);
     }
