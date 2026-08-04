@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.cache.annotation.Cacheable;
 import com.rho.exchangerate.exception.ExchangeRateProviderException;
+import org.springframework.web.client.RestClientException;
 
 @Component
 public class ExchangeRateProviderClient {
@@ -52,18 +53,24 @@ public class ExchangeRateProviderClient {
     @Cacheable(cacheNames = "latestRates", sync = true)
     public ProviderRatesResponse getLatestRates() {
 
-        ProviderRatesResponse response = restClient.get()
-                // Builds the /live request and adds the API key as a query parameter.
-                .uri(uriBuilder -> uriBuilder
-                        .path("/live")
-                        .queryParam("access_key", accessKey)
-                        .build())
-                // Sends the request and reads the response.
-                .retrieve()
-                .body(ProviderRatesResponse.class);
+        try {
+            ProviderRatesResponse response = restClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/live")
+                            .queryParam("access_key", accessKey)
+                            .build())
+                    .retrieve()
+                    .body(ProviderRatesResponse.class);
 
-        validateProviderResponse(response);
+            validateProviderResponse(response);
 
-        return response;
+            return response;
+
+        } catch (RestClientException exception) {
+            throw new ExchangeRateProviderException(
+                    "Unable to retrieve exchange rates from external provider",
+                    exception
+            );
+        }
     }
 }
