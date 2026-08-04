@@ -3,13 +3,21 @@ package com.rho.exchangerate.service;
 import com.rho.exchangerate.client.ExchangeRateProviderClient;
 import com.rho.exchangerate.dto.ExchangeRateResponse;
 import com.rho.exchangerate.dto.ProviderRatesResponse;
+import com.rho.exchangerate.dto.AllExchangeRatesResponse;
+import com.rho.exchangerate.dto.ConversionResponse;
+import com.rho.exchangerate.dto.MultipleConversionResponse;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -50,4 +58,180 @@ class ExchangeRateServiceTest {
                 response.getRate()
         );
     }
+
+    @Test
+    void shouldCalculateExchangeRateWhenSourceCurrencyIsUsd() {
+
+        Map<String, BigDecimal> quotes = new HashMap<>();
+        quotes.put("USDEUR", new BigDecimal("0.80"));
+
+        ProviderRatesResponse providerResponse =
+                new ProviderRatesResponse();
+
+        providerResponse.setQuotes(quotes);
+
+        when(providerClient.getLatestRates())
+                .thenReturn(providerResponse);
+
+        ExchangeRateResponse response =
+                exchangeRateService.getExchangeRate("USD", "EUR");
+
+        assertEquals("USD", response.getFrom());
+        assertEquals("EUR", response.getTo());
+        assertEquals(
+                new BigDecimal("0.8000000000"),
+                response.getRate()
+        );
+    }
+
+    @Test
+    void shouldCalculateAllExchangeRatesFromGivenCurrency() {
+
+        Map<String, BigDecimal> quotes = new HashMap<>();
+        quotes.put("USDEUR", new BigDecimal("0.80"));
+        quotes.put("USDGBP", new BigDecimal("0.60"));
+        quotes.put("USDJPY", new BigDecimal("120.00"));
+
+        ProviderRatesResponse providerResponse =
+                new ProviderRatesResponse();
+
+        providerResponse.setQuotes(quotes);
+
+        when(providerClient.getLatestRates())
+                .thenReturn(providerResponse);
+
+        AllExchangeRatesResponse response =
+                exchangeRateService.getAllRates("EUR");
+
+        assertEquals("EUR", response.getBase());
+
+        assertEquals(
+                new BigDecimal("1"),
+                response.getRates().get("EUR")
+        );
+
+        assertEquals(
+                new BigDecimal("1.2500000000"),
+                response.getRates().get("USD")
+        );
+
+        assertEquals(
+                new BigDecimal("0.7500000000"),
+                response.getRates().get("GBP")
+        );
+
+        assertEquals(
+                new BigDecimal("150.0000000000"),
+                response.getRates().get("JPY")
+        );
+    }
+
+    @Test
+    void shouldConvertAmountBetweenTwoCurrencies() {
+
+        Map<String, BigDecimal> quotes = new HashMap<>();
+        quotes.put("USDEUR", new BigDecimal("0.80"));
+        quotes.put("USDGBP", new BigDecimal("0.60"));
+
+        ProviderRatesResponse providerResponse =
+                new ProviderRatesResponse();
+
+        providerResponse.setQuotes(quotes);
+
+        when(providerClient.getLatestRates())
+                .thenReturn(providerResponse);
+
+        ConversionResponse response =
+                exchangeRateService.convertAmount(
+                        "EUR",
+                        "GBP",
+                        new BigDecimal("100")
+                );
+
+        assertEquals("EUR", response.getFrom());
+        assertEquals("GBP", response.getTo());
+
+        assertEquals(
+                new BigDecimal("100"),
+                response.getAmount()
+        );
+
+        assertEquals(
+                new BigDecimal("75.0000000000"),
+                response.getConvertedAmount()
+        );
+    }
+
+    @Test
+    void shouldConvertAmountToMultipleCurrencies() {
+
+        Map<String, BigDecimal> quotes = new HashMap<>();
+        quotes.put("USDEUR", new BigDecimal("0.80"));
+        quotes.put("USDGBP", new BigDecimal("0.60"));
+        quotes.put("USDJPY", new BigDecimal("120.00"));
+
+        ProviderRatesResponse providerResponse =
+                new ProviderRatesResponse();
+
+        providerResponse.setQuotes(quotes);
+
+        when(providerClient.getLatestRates())
+                .thenReturn(providerResponse);
+
+        MultipleConversionResponse response =
+                exchangeRateService.convertAmountToMultipleCurrencies(
+                        "EUR",
+                        List.of("GBP", "USD", "JPY"),
+                        new BigDecimal("100")
+                );
+
+        assertEquals("EUR", response.getFrom());
+
+        assertEquals(
+                new BigDecimal("100"),
+                response.getAmount()
+        );
+
+        assertEquals(
+                new BigDecimal("75.0000000000"),
+                response.getConversions().get("GBP")
+        );
+
+        assertEquals(
+                new BigDecimal("125.0000000000"),
+                response.getConversions().get("USD")
+        );
+
+        assertEquals(
+                new BigDecimal("15000.0000000000"),
+                response.getConversions().get("JPY")
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCurrencyIsUnsupported() {
+
+        Map<String, BigDecimal> quotes = new HashMap<>();
+        quotes.put("USDEUR", new BigDecimal("0.80"));
+
+        ProviderRatesResponse providerResponse =
+                new ProviderRatesResponse();
+
+        providerResponse.setQuotes(quotes);
+
+        when(providerClient.getLatestRates())
+                .thenReturn(providerResponse);
+
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> exchangeRateService.getExchangeRate("EUR", "XYZ")
+                );
+
+        assertEquals(
+                "Unsupported currency: XYZ",
+                exception.getMessage()
+        );
+    }
+
 }
