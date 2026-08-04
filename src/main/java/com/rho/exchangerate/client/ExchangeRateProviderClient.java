@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.cache.annotation.Cacheable;
+import com.rho.exchangerate.exception.ExchangeRateProviderException;
 
 @Component
 public class ExchangeRateProviderClient {
@@ -24,11 +25,34 @@ public class ExchangeRateProviderClient {
         this.accessKey = accessKey;
     }
 
+    private void validateProviderResponse(
+            ProviderRatesResponse response
+    ) {
+        if (response == null) {
+            throw new ExchangeRateProviderException(
+                    "External provider returned an empty response"
+            );
+        }
+
+        if (!response.isSuccess()) {
+            throw new ExchangeRateProviderException(
+                    "External provider returned an unsuccessful response"
+            );
+        }
+
+        if (response.getQuotes() == null
+                || response.getQuotes().isEmpty()) {
+            throw new ExchangeRateProviderException(
+                    "External provider returned no exchange rates"
+            );
+        }
+    }
+
     // Requests the latest exchange rates from the external provider.
     @Cacheable(cacheNames = "latestRates", sync = true)
     public ProviderRatesResponse getLatestRates() {
 
-        return restClient.get()
+        ProviderRatesResponse response = restClient.get()
                 // Builds the /live request and adds the API key as a query parameter.
                 .uri(uriBuilder -> uriBuilder
                         .path("/live")
@@ -37,5 +61,9 @@ public class ExchangeRateProviderClient {
                 // Sends the request and reads the response.
                 .retrieve()
                 .body(ProviderRatesResponse.class);
+
+        validateProviderResponse(response);
+
+        return response;
     }
 }
