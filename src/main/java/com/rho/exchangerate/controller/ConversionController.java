@@ -2,6 +2,8 @@ package com.rho.exchangerate.controller;
 
 import com.rho.exchangerate.dto.ConversionResponse;
 import com.rho.exchangerate.service.ExchangeRateService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,6 +14,10 @@ import com.rho.exchangerate.validation.RequestValidator;
 import java.math.BigDecimal;
 import java.util.List;
 
+@Tag(
+        name = "Currency Conversions",
+        description = "Convert monetary amounts between currencies"
+)
 @RestController
 @RequestMapping("/api/conversions")
 public class ConversionController {
@@ -24,6 +30,9 @@ public class ConversionController {
         this.exchangeRateService = exchangeRateService;
     }
 
+    @Operation(
+            summary = "Convert an amount to another currency"
+    )
     @GetMapping
     public ConversionResponse convertAmount(
             @RequestParam String from,
@@ -41,6 +50,9 @@ public class ConversionController {
         );
     }
 
+    @Operation(
+            summary = "Convert an amount to multiple currencies"
+    )
     @GetMapping("/multiple")
     public MultipleConversionResponse convertAmountToMultipleCurrencies(
             @RequestParam String from,

@@ -27,7 +27,7 @@ public class ExchangeRateService
         this.providerClient = providerClient;
     }
 
-    // Returns the exchange rate from USD to the requested currency.
+
     private BigDecimal findUsdRate(
             String currency,
             Map<String, BigDecimal> quotes) {
@@ -40,7 +40,7 @@ public class ExchangeRateService
         // Builds the key used by the provider, for example "USDEUR".
         String quoteKey = PROVIDER_BASE_CURRENCY + currency;
 
-        // Retrieves the corresponding rate from the quotes map.
+
         BigDecimal rate = quotes.get(quoteKey);
 
         if (rate == null) {
@@ -52,7 +52,7 @@ public class ExchangeRateService
         return rate;
     }
 
-    //gets the exchange rates
+
     public ExchangeRateResponse getExchangeRate(String from, String to) {
         String normalizedFrom = from.toUpperCase(Locale.ROOT);
         String normalizedTo = to.toUpperCase(Locale.ROOT);
@@ -63,9 +63,9 @@ public class ExchangeRateService
         BigDecimal fromRate = findUsdRate(normalizedFrom, quotes);
         BigDecimal toRate = findUsdRate(normalizedTo, quotes);
 
+        // Cross rate: from -> to = (USD -> to) / (USD -> from).
         BigDecimal rate = toRate.divide(fromRate, 10, RoundingMode.HALF_UP);
 
-        //delivers the response in uppercase
         return new ExchangeRateResponse(
                 normalizedFrom,
                 normalizedTo,
@@ -78,22 +78,19 @@ public class ExchangeRateService
     // Returns all exchange rates using the requested currency as the base.
     public AllExchangeRatesResponse getAllRates(String from) {
 
-        // Normalizes the currency code, for example "eur" becomes "EUR".
         String normalizedFrom = from.toUpperCase(Locale.ROOT);
 
-        // Gets the latest USD-based rates from the external provider.
         ProviderRatesResponse providerResponse =
                 providerClient.getLatestRates();
 
         Map<String, BigDecimal> quotes = providerResponse.getQuotes();
 
-        // Gets the provider rate from USD to the requested base currency.
         BigDecimal fromRate = findUsdRate(normalizedFrom, quotes);
 
         // TreeMap keeps the currencies ordered alphabetically.
         Map<String, BigDecimal> calculatedRates = new TreeMap<>();
 
-        // Calculates the rate from the requested base currency to USD.
+        // Since fromRate represents USD -> from, its inverse represents from -> USD.
         calculatedRates.put(
                 PROVIDER_BASE_CURRENCY,
                 BigDecimal.ONE.divide(fromRate, 10, RoundingMode.HALF_UP)
@@ -131,7 +128,6 @@ public class ExchangeRateService
         );
     }
 
-    // Converts an amount from one currency to another.
     public ConversionResponse convertAmount(
             String from,
             String to,
@@ -141,7 +137,6 @@ public class ExchangeRateService
                 getExchangeRate(from, to);
 
 
-        // Mutiplies the amount by the exchange rate to get the final value
         BigDecimal convertedAmount = amount
                 .multiply(exchangeRate.getRate())
                 .setScale(10, RoundingMode.HALF_UP);
@@ -155,7 +150,6 @@ public class ExchangeRateService
         );
     }
 
-    // Converts an amount from one currency to multiple target currencies.
     public MultipleConversionResponse convertAmountToMultipleCurrencies(
             String from,
             List<String> targetCurrencies,
