@@ -11,8 +11,8 @@
 	<groupId>com.rho</groupId>
 	<artifactId>exchange-rate-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+    <name>exchange-rate-api</name>
+    <description>REST API for exchange rates and currency conversions</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -89,6 +89,10 @@
             <groupId>com.bucket4j</groupId>
             <artifactId>bucket4j_jdk17-core</artifactId>
             <version>8.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
     </dependencies>
 

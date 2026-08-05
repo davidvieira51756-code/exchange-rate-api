@@ -19,6 +19,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final int REQUESTS_PER_MINUTE = 60;
 
+    // Keeps one rate-limit bucket per client IP for this application instance.
     private final Map<String, Bucket> bucketsByIp =
             new ConcurrentHashMap<>();
 
