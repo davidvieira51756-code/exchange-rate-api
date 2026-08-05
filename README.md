@@ -42,6 +42,11 @@ APP_SECURITY_PASSWORD=replace-with-your-password
 
 The provider base URL is configured in `application.properties`.
 
+The provider HTTP client uses configurable timeouts:
+
+- `exchange-rate.api.connect-timeout=2s`
+- `exchange-rate.api.read-timeout=5s`
+
 The `.env` file is ignored by Git and must not be committed.
 
 ## Run Locally
@@ -178,9 +183,10 @@ Provider failures are converted into `502 Bad Gateway` responses.
 
 HTTP Basic authentication uses one in-memory user configured through environment variables. The application is stateless, so credentials are checked on every protected request.
 
+The provider client is configured with connection and read timeouts to avoid requests hanging when the external API is slow or unavailable.
 ## Error Codes
 
-- `400 Bad Request` - invalid input or unsupported currency
+- `400 Bad Request` - invalid input, missing required parameters, invalid parameter type, or unsupported currency
 - `401 Unauthorized` - missing or invalid credentials
 - `429 Too Many Requests` - rate limit exceeded
 - `502 Bad Gateway` - external provider failure
