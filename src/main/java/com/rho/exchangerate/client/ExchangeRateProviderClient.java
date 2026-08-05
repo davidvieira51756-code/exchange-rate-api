@@ -7,6 +7,8 @@ import org.springframework.web.client.RestClient;
 import org.springframework.cache.annotation.Cacheable;
 import com.rho.exchangerate.exception.ExchangeRateProviderException;
 import org.springframework.web.client.RestClientException;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import java.time.Duration;
 
 @Component
 public class ExchangeRateProviderClient {
@@ -16,11 +18,27 @@ public class ExchangeRateProviderClient {
 
     // Creates the client used to communicate with the external exchange-rate API.
     public ExchangeRateProviderClient(
-            @Value("${exchange-rate.api.base-url}") String baseUrl,
-            @Value("${exchange-rate.api.access-key}") String accessKey) {
+            @Value("${exchange-rate.api.base-url}")
+            String baseUrl,
+
+            @Value("${exchange-rate.api.access-key}")
+            String accessKey,
+
+            @Value("${exchange-rate.api.connect-timeout}")
+            Duration connectTimeout,
+
+            @Value("${exchange-rate.api.read-timeout}")
+            Duration readTimeout
+    ) {
+        SimpleClientHttpRequestFactory requestFactory =
+                new SimpleClientHttpRequestFactory();
+
+        requestFactory.setConnectTimeout(connectTimeout);
+        requestFactory.setReadTimeout(readTimeout);
 
         this.restClient = RestClient.builder()
                 .baseUrl(baseUrl)
+                .requestFactory(requestFactory)
                 .build();
 
         this.accessKey = accessKey;
