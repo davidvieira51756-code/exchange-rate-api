@@ -1,6 +1,8 @@
   type Query {
     exchangeRate(from: String!, to: String!): ExchangeRate!
+    allRates(from: String!): AllRates!
     convert(from: String!, to: String!, amount: String!): Conversion!
+    convertMultiple(from: String!, to: [String!]!, amount: String!): MultipleConversion!
   }
 
   type ExchangeRate {
@@ -9,10 +11,31 @@
     rate: String!
   }
 
+  type RateEntry {
+    currency: String!
+    rate: String!
+  }
+
+  type AllRates {
+    base: String!
+    rates: [RateEntry!]!
+  }
+
   type Conversion {
     from: String!
     to: String!
     amount: String!
     rate: String!
     convertedAmount: String!
+  }
+
+  type ConversionEntry {
+    currency: String!
+    convertedAmount: String!
+  }
+
+  type MultipleConversion {
+    from: String!
+    amount: String!
+    conversions: [ConversionEntry!]!
   }

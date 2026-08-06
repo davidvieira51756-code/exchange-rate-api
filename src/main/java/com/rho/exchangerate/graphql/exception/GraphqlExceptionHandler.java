@@ -1,4 +1,4 @@
-package com.rho.exchangerate.graphql;
+package com.rho.exchangerate.graphql.exception;
 
 import com.rho.exchangerate.exception.ExchangeRateProviderException;
 import graphql.GraphQLError;
