@@ -8,6 +8,8 @@ import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter
 import org.springframework.graphql.execution.ErrorType;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 public class GraphqlExceptionHandler
         extends DataFetcherExceptionResolverAdapter {
@@ -21,6 +23,10 @@ public class GraphqlExceptionHandler
             return GraphqlErrorBuilder.newError(environment)
                     .message(exception.getMessage())
                     .errorType(ErrorType.BAD_REQUEST)
+                    .extensions(Map.of(
+                            "status", 400,
+                            "error", "Bad Request"
+                    ))
                     .build();
         }
 
@@ -28,6 +34,10 @@ public class GraphqlExceptionHandler
             return GraphqlErrorBuilder.newError(environment)
                     .message(exception.getMessage())
                     .errorType(ErrorType.INTERNAL_ERROR)
+                    .extensions(Map.of(
+                            "status", 502,
+                            "error", "Bad Gateway"
+                    ))
                     .build();
         }
 
