@@ -1,0 +1,18 @@
+  type Query {
+    exchangeRate(from: String!, to: String!): ExchangeRate!
+    convert(from: String!, to: String!, amount: String!): Conversion!
+  }
+
+  type ExchangeRate {
+    from: String!
+    to: String!
+    rate: String!
+  }
+
+  type Conversion {
+    from: String!
+    to: String!
+    amount: String!
+    rate: String!
+    convertedAmount: String!
+  }
