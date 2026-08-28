@@ -24,36 +24,77 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldReturnBadRequestForIllegalArgumentException() {
         IllegalArgumentException exception =
-                new IllegalArgumentException("Amount must be greater than zero");
+                new IllegalArgumentException(
+                        "Amount must be greater than zero"
+                );
 
         ResponseEntity<ApiErrorResponse> response =
                 handler.handleIllegalArgumentException(exception);
 
-        assertEquals(400, response.getStatusCode().value());
+        assertEquals(
+                400,
+                response.getStatusCode().value()
+        );
+
         assertNotNull(response.getBody());
-        assertEquals(400, response.getBody().getStatus());
-        assertEquals("Bad Request", response.getBody().getError());
+
+        assertEquals(
+                400,
+                response.getBody().status()
+        );
+
+        assertEquals(
+                "Bad Request",
+                response.getBody().error()
+        );
+
         assertEquals(
                 "Amount must be greater than zero",
-                response.getBody().getMessage()
+                response.getBody().message()
         );
-        assertNotNull(response.getBody().getTimestamp());
+
+        assertNotNull(
+                response.getBody().timestamp()
+        );
     }
 
     @Test
     void shouldReturnBadGatewayForProviderException() {
         ExchangeRateProviderException exception =
-                new ExchangeRateProviderException("Provider failed");
+                new ExchangeRateProviderException(
+                        "Provider failed"
+                );
 
         ResponseEntity<ApiErrorResponse> response =
-                handler.handleExchangeRateProviderException(exception);
+                handler.handleExchangeRateProviderException(
+                        exception
+                );
 
-        assertEquals(502, response.getStatusCode().value());
+        assertEquals(
+                502,
+                response.getStatusCode().value()
+        );
+
         assertNotNull(response.getBody());
-        assertEquals(502, response.getBody().getStatus());
-        assertEquals("Bad Gateway", response.getBody().getError());
-        assertEquals("Provider failed", response.getBody().getMessage());
-        assertNotNull(response.getBody().getTimestamp());
+
+        assertEquals(
+                502,
+                response.getBody().status()
+        );
+
+        assertEquals(
+                "Bad Gateway",
+                response.getBody().error()
+        );
+
+        assertEquals(
+                "Provider failed",
+                response.getBody().message()
+        );
+
+        assertNotNull(
+                response.getBody().timestamp()
+        );
     }
 
     @Test
@@ -68,17 +109,35 @@ class GlobalExceptionHandlerTest {
                 );
 
         ResponseEntity<ApiErrorResponse> response =
-                handler.handleMethodArgumentTypeMismatch(exception);
+                handler.handleMethodArgumentTypeMismatch(
+                        exception
+                );
 
-        assertEquals(400, response.getStatusCode().value());
+        assertEquals(
+                400,
+                response.getStatusCode().value()
+        );
+
         assertNotNull(response.getBody());
-        assertEquals(400, response.getBody().getStatus());
-        assertEquals("Bad Request", response.getBody().getError());
+
+        assertEquals(
+                400,
+                response.getBody().status()
+        );
+
+        assertEquals(
+                "Bad Request",
+                response.getBody().error()
+        );
+
         assertEquals(
                 "Invalid value for request parameter: amount",
-                response.getBody().getMessage()
+                response.getBody().message()
         );
-        assertNotNull(response.getBody().getTimestamp());
+
+        assertNotNull(
+                response.getBody().timestamp()
+        );
     }
 
     @Test
@@ -90,35 +149,73 @@ class GlobalExceptionHandlerTest {
                 );
 
         ResponseEntity<ApiErrorResponse> response =
-                handler.handleMissingServletRequestParameter(exception);
+                handler.handleMissingServletRequestParameter(
+                        exception
+                );
 
-        assertEquals(400, response.getStatusCode().value());
+        assertEquals(
+                400,
+                response.getStatusCode().value()
+        );
+
         assertNotNull(response.getBody());
-        assertEquals(400, response.getBody().getStatus());
-        assertEquals("Bad Request", response.getBody().getError());
+
+        assertEquals(
+                400,
+                response.getBody().status()
+        );
+
+        assertEquals(
+                "Bad Request",
+                response.getBody().error()
+        );
+
         assertEquals(
                 "Missing required request parameter: amount",
-                response.getBody().getMessage()
+                response.getBody().message()
         );
-        assertNotNull(response.getBody().getTimestamp());
+
+        assertNotNull(
+                response.getBody().timestamp()
+        );
     }
 
     @Test
     void shouldReturnBadRequestForUnsupportedCurrency() {
         UnsupportedCurrencyException exception =
-                new UnsupportedCurrencyException("XYZ");
+                new UnsupportedCurrencyException(
+                        "XYZ"
+                );
 
         ResponseEntity<ApiErrorResponse> response =
-                handler.handleUnsupportedCurrencyException(exception);
+                handler.handleUnsupportedCurrencyException(
+                        exception
+                );
 
-        assertEquals(400, response.getStatusCode().value());
+        assertEquals(
+                400,
+                response.getStatusCode().value()
+        );
+
         assertNotNull(response.getBody());
-        assertEquals(400, response.getBody().getStatus());
-        assertEquals("Bad Request", response.getBody().getError());
+
+        assertEquals(
+                400,
+                response.getBody().status()
+        );
+
+        assertEquals(
+                "Bad Request",
+                response.getBody().error()
+        );
+
         assertEquals(
                 "Unsupported currency: XYZ",
-                response.getBody().getMessage()
+                response.getBody().message()
         );
-        assertNotNull(response.getBody().getTimestamp());
+
+        assertNotNull(
+                response.getBody().timestamp()
+        );
     }
 }

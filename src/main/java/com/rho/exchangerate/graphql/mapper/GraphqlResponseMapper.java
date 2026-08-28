@@ -16,7 +16,7 @@ public class GraphqlResponseMapper {
     public GraphqlAllRatesResponse toGraphqlAllRatesResponse(
             AllExchangeRatesResponse response
     ) {
-        List<RateEntry> rates = response.getRates()
+        List<RateEntry> rates = response.rates()
                 .entrySet()
                 .stream()
                 .map(entry -> new RateEntry(
@@ -26,7 +26,7 @@ public class GraphqlResponseMapper {
                 .toList();
 
         return new GraphqlAllRatesResponse(
-                response.getBase(),
+                response.base(),
                 rates
         );
     }
@@ -34,18 +34,19 @@ public class GraphqlResponseMapper {
     public GraphqlMultipleConversionResponse toGraphqlMultipleConversionResponse(
             MultipleConversionResponse response
     ) {
-        List<ConversionEntry> conversions = response.getConversions()
-                .entrySet()
-                .stream()
-                .map(entry -> new ConversionEntry(
-                        entry.getKey(),
-                        entry.getValue()
-                ))
-                .toList();
+        List<ConversionEntry> conversions =
+                response.conversions()
+                        .entrySet()
+                        .stream()
+                        .map(entry -> new ConversionEntry(
+                                entry.getKey(),
+                                entry.getValue()
+                        ))
+                        .toList();
 
         return new GraphqlMultipleConversionResponse(
-                response.getFrom(),
-                response.getAmount(),
+                response.from(),
+                response.amount(),
                 conversions
         );
     }
