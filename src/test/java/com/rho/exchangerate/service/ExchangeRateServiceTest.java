@@ -8,6 +8,8 @@ import com.rho.exchangerate.dto.ConversionResponse;
 import com.rho.exchangerate.dto.MultipleConversionResponse;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.rho.exchangerate.exception.UnsupportedCurrencyException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -222,9 +224,9 @@ class ExchangeRateServiceTest {
         when(providerClient.getLatestRates())
                 .thenReturn(providerResponse);
 
-        IllegalArgumentException exception =
+        UnsupportedCurrencyException exception =
                 assertThrows(
-                        IllegalArgumentException.class,
+                        UnsupportedCurrencyException.class,
                         () -> exchangeRateService.getExchangeRate("EUR", "XYZ")
                 );
 

@@ -7,6 +7,7 @@ import com.rho.exchangerate.dto.ProviderRatesResponse;
 import com.rho.exchangerate.dto.ConversionResponse;
 import com.rho.exchangerate.dto.MultipleConversionResponse;
 import org.springframework.stereotype.Service;
+import com.rho.exchangerate.exception.UnsupportedCurrencyException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -44,9 +45,7 @@ public class ExchangeRateService
         BigDecimal rate = quotes.get(quoteKey);
 
         if (rate == null) {
-            throw new IllegalArgumentException(
-                    "Unsupported currency: " + currency
-            );
+            throw new UnsupportedCurrencyException(currency);
         }
 
         return rate;
@@ -168,9 +167,7 @@ public class ExchangeRateService
                     allRates.getRates().get(normalizedTarget);
 
             if (rate == null) {
-                throw new IllegalArgumentException(
-                        "Unsupported currency: " + normalizedTarget
-                );
+                throw new UnsupportedCurrencyException(normalizedTarget);
             }
 
             BigDecimal convertedAmount = amount

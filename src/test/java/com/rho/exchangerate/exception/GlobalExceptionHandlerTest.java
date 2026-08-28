@@ -102,4 +102,23 @@ class GlobalExceptionHandlerTest {
         );
         assertNotNull(response.getBody().getTimestamp());
     }
+
+    @Test
+    void shouldReturnBadRequestForUnsupportedCurrency() {
+        UnsupportedCurrencyException exception =
+                new UnsupportedCurrencyException("XYZ");
+
+        ResponseEntity<ApiErrorResponse> response =
+                handler.handleUnsupportedCurrencyException(exception);
+
+        assertEquals(400, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals(400, response.getBody().getStatus());
+        assertEquals("Bad Request", response.getBody().getError());
+        assertEquals(
+                "Unsupported currency: XYZ",
+                response.getBody().getMessage()
+        );
+        assertNotNull(response.getBody().getTimestamp());
+    }
 }
