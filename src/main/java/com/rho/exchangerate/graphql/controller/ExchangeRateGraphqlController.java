@@ -4,6 +4,7 @@ import com.rho.exchangerate.dto.AllExchangeRatesResponse;
 import com.rho.exchangerate.dto.ConversionResponse;
 import com.rho.exchangerate.dto.ExchangeRateResponse;
 import com.rho.exchangerate.dto.MultipleConversionResponse;
+import com.rho.exchangerate.exception.InvalidAmountException;
 import com.rho.exchangerate.graphql.dto.ConversionEntry;
 import com.rho.exchangerate.graphql.dto.GraphqlAllRatesResponse;
 import com.rho.exchangerate.graphql.dto.GraphqlMultipleConversionResponse;
@@ -127,7 +128,7 @@ public class ExchangeRateGraphqlController {
         try {
             parsedAmount = new BigDecimal(amount);
         } catch (NumberFormatException exception) {
-            throw new IllegalArgumentException(
+            throw new InvalidAmountException(
                     "Amount must be a valid number"
             );
         }

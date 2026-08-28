@@ -1,5 +1,9 @@
 package com.rho.exchangerate.validation;
 
+import com.rho.exchangerate.exception.InvalidAmountException;
+import com.rho.exchangerate.exception.InvalidAmountException;
+import com.rho.exchangerate.exception.InvalidCurrencyException;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -12,7 +16,7 @@ public final class RequestValidator {
 
     public static void validateCurrencyCode(String currency) {
         if (currency == null || !currency.matches(CURRENCY_CODE_PATTERN)) {
-            throw new IllegalArgumentException(
+            throw new InvalidCurrencyException(
                     "Currency must contain exactly 3 letters"
             );
         }
@@ -20,7 +24,7 @@ public final class RequestValidator {
 
     public static void validateCurrencyCodes(List<String> currencies) {
         if (currencies == null || currencies.isEmpty()) {
-            throw new IllegalArgumentException(
+            throw new InvalidCurrencyException(
                     "At least one target currency must be supplied"
             );
         }
@@ -32,7 +36,7 @@ public final class RequestValidator {
 
     public static void validateAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(
+            throw new InvalidAmountException(
                     "Amount must be greater than zero"
             );
         }

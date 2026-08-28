@@ -1,6 +1,9 @@
 package com.rho.exchangerate.graphql.exception;
 
 import com.rho.exchangerate.exception.ExchangeRateProviderException;
+import com.rho.exchangerate.exception.InvalidAmountException;
+import com.rho.exchangerate.exception.InvalidCurrencyException;
+import com.rho.exchangerate.exception.UnsupportedCurrencyException;
 import graphql.GraphQLError;
 import graphql.GraphqlErrorBuilder;
 import graphql.schema.DataFetchingEnvironment;
@@ -19,7 +22,9 @@ public class GraphqlExceptionHandler
             Throwable exception,
             DataFetchingEnvironment environment
     ) {
-        if (exception instanceof IllegalArgumentException) {
+        if (exception instanceof InvalidCurrencyException
+                || exception instanceof InvalidAmountException
+                || exception instanceof UnsupportedCurrencyException) {
             return GraphqlErrorBuilder.newError(environment)
                     .message(exception.getMessage())
                     .errorType(ErrorType.BAD_REQUEST)
