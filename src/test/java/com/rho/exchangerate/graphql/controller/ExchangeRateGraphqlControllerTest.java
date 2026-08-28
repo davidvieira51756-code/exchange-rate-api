@@ -6,6 +6,8 @@ import com.rho.exchangerate.dto.ExchangeRateResponse;
 import com.rho.exchangerate.dto.MultipleConversionResponse;
 import com.rho.exchangerate.graphql.dto.GraphqlAllRatesResponse;
 import com.rho.exchangerate.graphql.dto.GraphqlMultipleConversionResponse;
+import com.rho.exchangerate.graphql.mapper.GraphqlInputParser;
+import com.rho.exchangerate.graphql.mapper.GraphqlResponseMapper;
 import com.rho.exchangerate.service.ExchangeRateService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,12 +24,22 @@ import static org.mockito.Mockito.when;
 class ExchangeRateGraphqlControllerTest {
 
     private ExchangeRateService exchangeRateService;
+    private GraphqlInputParser inputParser;
+    private GraphqlResponseMapper responseMapper;
     private ExchangeRateGraphqlController controller;
 
     @BeforeEach
     void setUp() {
         exchangeRateService = Mockito.mock(ExchangeRateService.class);
-        controller = new ExchangeRateGraphqlController(exchangeRateService);
+
+        inputParser = new GraphqlInputParser();
+        responseMapper = new GraphqlResponseMapper();
+
+        controller = new ExchangeRateGraphqlController(
+                exchangeRateService,
+                inputParser,
+                responseMapper
+        );
     }
 
     @Test
@@ -60,7 +72,10 @@ class ExchangeRateGraphqlControllerTest {
         rates.put("GBP", new BigDecimal("0.7500000000"));
 
         AllExchangeRatesResponse serviceResponse =
-                new AllExchangeRatesResponse("EUR", rates);
+                new AllExchangeRatesResponse(
+                        "EUR",
+                        rates
+                );
 
         when(exchangeRateService.getAllRates("EUR"))
                 .thenReturn(serviceResponse);
@@ -70,13 +85,21 @@ class ExchangeRateGraphqlControllerTest {
 
         assertEquals("EUR", response.base());
 
-        assertEquals("USD", response.rates().get(0).currency());
+        assertEquals(
+                "USD",
+                response.rates().get(0).currency()
+        );
+
         assertEquals(
                 new BigDecimal("1.2500000000"),
                 response.rates().get(0).rate()
         );
 
-        assertEquals("GBP", response.rates().get(1).currency());
+        assertEquals(
+                "GBP",
+                response.rates().get(1).currency()
+        );
+
         assertEquals(
                 new BigDecimal("0.7500000000"),
                 response.rates().get(1).rate()
@@ -101,7 +124,11 @@ class ExchangeRateGraphqlControllerTest {
         )).thenReturn(serviceResponse);
 
         ConversionResponse response =
-                controller.convert("EUR", "GBP", "100");
+                controller.convert(
+                        "EUR",
+                        "GBP",
+                        "100"
+                );
 
         assertEquals("EUR", response.getFrom());
         assertEquals("GBP", response.getTo());
@@ -124,9 +151,18 @@ class ExchangeRateGraphqlControllerTest {
 
     @Test
     void shouldConvertAmountToMultipleCurrencies() {
-        Map<String, BigDecimal> conversions = new LinkedHashMap<>();
-        conversions.put("GBP", new BigDecimal("75.0000000000"));
-        conversions.put("USD", new BigDecimal("125.0000000000"));
+        Map<String, BigDecimal> conversions =
+                new LinkedHashMap<>();
+
+        conversions.put(
+                "GBP",
+                new BigDecimal("75.0000000000")
+        );
+
+        conversions.put(
+                "USD",
+                new BigDecimal("125.0000000000")
+        );
 
         MultipleConversionResponse serviceResponse =
                 new MultipleConversionResponse(
@@ -148,20 +184,31 @@ class ExchangeRateGraphqlControllerTest {
                         "100"
                 );
 
-        assertEquals("EUR", response.from());
+        assertEquals(
+                "EUR",
+                response.from()
+        );
 
         assertEquals(
                 new BigDecimal("100"),
                 response.amount()
         );
 
-        assertEquals("GBP", response.conversions().get(0).currency());
+        assertEquals(
+                "GBP",
+                response.conversions().get(0).currency()
+        );
+
         assertEquals(
                 new BigDecimal("75.0000000000"),
                 response.conversions().get(0).convertedAmount()
         );
 
-        assertEquals("USD", response.conversions().get(1).currency());
+        assertEquals(
+                "USD",
+                response.conversions().get(1).currency()
+        );
+
         assertEquals(
                 new BigDecimal("125.0000000000"),
                 response.conversions().get(1).convertedAmount()

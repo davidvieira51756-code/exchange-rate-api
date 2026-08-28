@@ -8,6 +8,7 @@ import com.rho.exchangerate.dto.ConversionResponse;
 import com.rho.exchangerate.dto.MultipleConversionResponse;
 import org.springframework.stereotype.Service;
 import com.rho.exchangerate.exception.UnsupportedCurrencyException;
+import com.rho.exchangerate.exception.InvalidAmountException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -26,6 +27,14 @@ public class ExchangeRateService
 
     public ExchangeRateService(ExchangeRateProviderClient providerClient) {
         this.providerClient = providerClient;
+    }
+
+    private void validateAmount(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException(
+                    "Amount must be greater than zero"
+            );
+        }
     }
 
 
@@ -132,6 +141,8 @@ public class ExchangeRateService
             String to,
             BigDecimal amount) {
 
+        validateAmount(amount);
+
         ExchangeRateResponse exchangeRate =
                 getExchangeRate(from, to);
 
@@ -153,6 +164,8 @@ public class ExchangeRateService
             String from,
             List<String> targetCurrencies,
             BigDecimal amount) {
+
+        validateAmount(amount);
 
         AllExchangeRatesResponse allRates = getAllRates(from);
 
