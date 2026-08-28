@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.rho.exchangerate.validation.RequestValidator;
+import jakarta.validation.constraints.Pattern;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @SecurityRequirement(name = "basicAuth")
@@ -34,11 +34,19 @@ public class ExchangeRateController {
     )
     @GetMapping("/{from}/{to}")
     public ExchangeRateResponse getExchangeRate(
-            @PathVariable String from,
-            @PathVariable String to) {
+            @PathVariable
+            @Pattern(
+                    regexp = "^[A-Za-z]{3}$",
+                    message = "Currency must contain exactly 3 letters"
+            )
+            String from,
 
-        RequestValidator.validateCurrencyCode(from);
-        RequestValidator.validateCurrencyCode(to);
+            @PathVariable
+            @Pattern(
+                    regexp = "^[A-Za-z]{3}$",
+                    message = "Currency must contain exactly 3 letters"
+            )
+            String to) {
 
         return exchangeRateService.getExchangeRate(from, to);
     }
@@ -48,9 +56,12 @@ public class ExchangeRateController {
     )
     @GetMapping("/{from}")
     public AllExchangeRatesResponse getAllRates(
-            @PathVariable String from) {
-
-        RequestValidator.validateCurrencyCode(from);
+            @PathVariable
+            @Pattern(
+                    regexp = "^[A-Za-z]{3}$",
+                    message = "Currency must contain exactly 3 letters"
+            )
+            String from) {
 
         return exchangeRateService.getAllRates(from);
     }

@@ -75,7 +75,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(400, response.getBody().getStatus());
         assertEquals("Bad Request", response.getBody().getError());
         assertEquals(
-                "Amount must be a valid number",
+                "Invalid value for request parameter: amount",
                 response.getBody().getMessage()
         );
         assertNotNull(response.getBody().getTimestamp());

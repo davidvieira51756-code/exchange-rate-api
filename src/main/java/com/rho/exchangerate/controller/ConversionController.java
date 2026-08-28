@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.rho.exchangerate.dto.MultipleConversionResponse;
-import com.rho.exchangerate.validation.RequestValidator;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.math.BigDecimal;
@@ -37,13 +39,23 @@ public class ConversionController {
     )
     @GetMapping
     public ConversionResponse convertAmount(
-            @RequestParam String from,
-            @RequestParam String to,
-            @RequestParam BigDecimal amount) {
+            @RequestParam
+            @Pattern(
+                    regexp = "^[A-Za-z]{3}$",
+                    message = "Currency must contain exactly 3 letters"
+            )
+            String from,
 
-        RequestValidator.validateCurrencyCode(from);
-        RequestValidator.validateCurrencyCode(to);
-        RequestValidator.validateAmount(amount);
+            @RequestParam
+            @Pattern(
+                    regexp = "^[A-Za-z]{3}$",
+                    message = "Currency must contain exactly 3 letters"
+            )
+            String to,
+
+            @RequestParam
+            @Positive(message = "Amount must be greater than zero")
+            BigDecimal amount) {
 
         return exchangeRateService.convertAmount(
                 from,
@@ -57,13 +69,29 @@ public class ConversionController {
     )
     @GetMapping("/multiple")
     public MultipleConversionResponse convertAmountToMultipleCurrencies(
-            @RequestParam String from,
-            @RequestParam List<String> to,
-            @RequestParam BigDecimal amount) {
+            @RequestParam
+            @Pattern(
+                    regexp = "^[A-Za-z]{3}$",
+                    message = "Currency must contain exactly 3 letters"
+            )
+            String from,
 
-        RequestValidator.validateCurrencyCode(from);
-        RequestValidator.validateCurrencyCodes(to);
-        RequestValidator.validateAmount(amount);
+            @RequestParam
+            @Size(
+                    min = 1,
+                    message = "At least one target currency must be supplied"
+            )
+            List<
+                    @Pattern(
+                            regexp = "^[A-Za-z]{3}$",
+                            message = "Currency must contain exactly 3 letters"
+                    )
+                            String
+                    > to,
+
+            @RequestParam
+            @Positive(message = "Amount must be greater than zero")
+            BigDecimal amount) {
 
         return exchangeRateService
                 .convertAmountToMultipleCurrencies(

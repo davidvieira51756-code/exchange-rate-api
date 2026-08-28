@@ -3,10 +3,11 @@ package com.rho.exchangerate.exception;
 import com.rho.exchangerate.dto.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 
 import java.time.LocalDateTime;
 
@@ -49,16 +50,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleMethodArgumentTypeMismatch(
             MethodArgumentTypeMismatchException exception
     ) {
-        String message = "Invalid request parameter: " + exception.getName();
-
-        if ("amount".equals(exception.getName())) {
-            message = "Amount must be a valid number";
-        }
-
         ApiErrorResponse errorResponse = new ApiErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                message,
+                "Invalid value for request parameter: " + exception.getName(),
                 LocalDateTime.now()
         );
 
@@ -84,4 +79,26 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ApiErrorResponse> handleValidationException(
+            HandlerMethodValidationException exception
+    ) {
+        String message = exception.getParameterValidationResults()
+                .stream()
+                .flatMap(result -> result.getResolvableErrors().stream())
+                .map(error -> error.getDefaultMessage())
+                .findFirst()
+                .orElse("Invalid request");
+
+        ApiErrorResponse errorResponse = new ApiErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                message,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
+    }
 }
