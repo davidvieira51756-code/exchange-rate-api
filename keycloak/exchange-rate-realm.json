@@ -1,0 +1,17 @@
+{
+  "realm": "exchange-rate",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "exchange-rate-api",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "exchange-rate-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "publicClient": false,
+      "protocol": "openid-connect"
+    }
+  ]
+}

@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.constraints.Pattern;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
-@SecurityRequirement(name = "basicAuth")
 @Tag(
         name = "Exchange Rates",
         description = "Retrieve exchange rates between currencies"

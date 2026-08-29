@@ -12,12 +12,10 @@ import com.rho.exchangerate.dto.MultipleConversionResponse;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@SecurityRequirement(name = "basicAuth")
 @Tag(
         name = "Currency Conversions",
         description = "Convert monetary amounts between currencies"
