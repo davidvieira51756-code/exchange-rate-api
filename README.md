@@ -2,35 +2,38 @@
 
 REST and GraphQL API built with Java 21 and Spring Boot for retrieving exchange rates and converting monetary amounts between currencies.
 
-The application integrates with `exchangerate.host` and includes caching, validation, rate limiting, HTTP Basic authentication, Swagger documentation, GraphQL, tests and Docker support.
+The application integrates with `exchangerate.host` and includes caching, Jakarta validation, JWT authentication, distributed rate limiting with Redis, Swagger documentation, GraphQL, tests and Docker support.
 
 ## Features
 
-* Get an exchange rate between two currencies
-* Get all exchange rates from a base currency
-* Convert an amount to one currency
-* Convert an amount to multiple currencies
-* Access the same operations through REST and GraphQL
-* Cache provider responses for one minute
-* Validate requests and return structured errors
-* Limit requests per client IP
-* Protect endpoints with HTTP Basic
-* Swagger/OpenAPI and GraphiQL interfaces
-* Unit tests
-* Dockerized setup
+- Get an exchange rate between two currencies
+- Get all exchange rates from a base currency
+- Convert an amount to one currency
+- Convert an amount to multiple currencies
+- Access the same operations through REST and GraphQL
+- Cache provider responses for one minute
+- Validate requests and return structured errors
+- Authenticate requests with JWT
+- Apply distributed rate limiting with Redis
+- Swagger/OpenAPI and GraphiQL interfaces
+- Unit tests
+- Dockerized setup
 
 ## Technologies
 
-* Java 21
-* Spring Boot
-* Spring Security
-* Spring GraphQL
-* Maven
-* Caffeine
-* Bucket4j
-* Springdoc OpenAPI
-* JUnit 5 and Mockito
-* Docker and Docker Compose
+- Java 21
+- Spring Boot
+- Spring Security
+- OAuth2 Resource Server / JWT
+- Keycloak
+- Spring GraphQL
+- Maven
+- Caffeine
+- Redis
+- Spring Data Redis
+- Springdoc OpenAPI
+- JUnit 5 and Mockito
+- Docker and Docker Compose
 
 ## Configuration
 
@@ -38,22 +41,26 @@ Create a `.env` file based on `.env.example`:
 
 ```env
 EXCHANGE_RATE_API_ACCESS_KEY=replace-with-your-access-key
-APP_SECURITY_USERNAME=admin
-APP_SECURITY_PASSWORD=replace-with-your-password
+
+JWT_ISSUER_URI=http://localhost:9090/realms/exchange-rate
+JWT_JWK_SET_URI=http://localhost:9090/realms/exchange-rate/protocol/openid-connect/certs
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
 ```
 
 The provider base URL is configured in `application.properties`.
 
 The provider HTTP client uses configurable timeouts:
 
-* `exchange-rate.api.connect-timeout=2s`
-* `exchange-rate.api.read-timeout=5s`
+- `exchange-rate.api.connect-timeout=2s`
+- `exchange-rate.api.read-timeout=5s`
 
 The `.env` file is ignored by Git and must not be committed.
 
 ## Run Locally
 
-Configure the required environment variables in your terminal or IntelliJ run configuration.
+Run Keycloak and Redis, then configure the required environment variables in your terminal or IntelliJ run configuration.
 
 Linux or macOS:
 
@@ -75,7 +82,7 @@ http://localhost:8080
 
 ## Run With Docker
 
-Build and start the application:
+Build and start the API, Keycloak and Redis:
 
 ```bash
 docker compose up --build
@@ -86,6 +93,24 @@ Stop the application:
 ```bash
 docker compose down
 ```
+
+## Authentication
+
+Protected endpoints use JWT authentication through Spring Security OAuth2 Resource Server.
+
+Keycloak runs at:
+
+```text
+http://localhost:9090
+```
+
+A token can be obtained using the `exchange-rate-api` client and then sent using:
+
+```http
+Authorization: Bearer <token>
+```
+
+The health endpoint and Swagger documentation are public.
 
 ## Swagger
 
@@ -101,9 +126,7 @@ OpenAPI specification:
 http://localhost:8080/v3/api-docs
 ```
 
-Use the **Authorize** button in Swagger with the configured username and password.
-
-The health endpoint and Swagger documentation are public. Exchange-rate and conversion endpoints require HTTP Basic authentication.
+Use the **Authorize** button and provide a valid JWT.
 
 ## REST Endpoints
 
@@ -175,7 +198,7 @@ GraphiQL interface:
 http://localhost:8080/graphiql
 ```
 
-GraphQL uses the same HTTP Basic authentication as the REST endpoints.
+GraphQL uses the same JWT authentication as the REST endpoints.
 
 Example query:
 
@@ -203,22 +226,20 @@ source -> target = (USD -> target) / (USD -> source)
 
 The latest provider response is cached for one minute using Caffeine to reduce external API calls.
 
-Rate limiting allows 60 requests per minute per client IP.
+Rate limiting allows 60 requests per minute per authenticated client and stores the counters in Redis, allowing the limit to be shared between application instances.
+
+Authentication is handled using JWT tokens issued by Keycloak and validated by Spring Security OAuth2 Resource Server.
 
 Provider failures are converted into `502 Bad Gateway` responses.
-
-HTTP Basic authentication uses one in-memory user configured through environment variables. The application is stateless, so credentials are checked on every protected request.
-
-The provider client is configured with connection and read timeouts to avoid requests hanging when the external API is slow or unavailable.
 
 REST and GraphQL reuse the same service layer, avoiding duplicated business logic.
 
 ## Error Codes
 
-* `400 Bad Request` - invalid input, missing required parameters, invalid parameter type, or unsupported currency
-* `401 Unauthorized` - missing or invalid credentials
-* `429 Too Many Requests` - rate limit exceeded
-* `502 Bad Gateway` - external provider failure
+- `400 Bad Request` - invalid input, missing required parameters, invalid parameter type, or unsupported currency
+- `401 Unauthorized` - missing or invalid JWT
+- `429 Too Many Requests` - rate limit exceeded
+- `502 Bad Gateway` - external provider failure
 
 ## Tests
 
@@ -236,6 +257,5 @@ Windows:
 
 ## Limitations
 
-* Exchange-rate data may be up to one minute old
-* Rate limiting is stored in memory and is local to each application instance
-* Authentication uses a single in-memory user
+- Exchange-rate data may be up to one minute old
+- Keycloak and Redis must be available for authenticated requests and distributed rate limiting

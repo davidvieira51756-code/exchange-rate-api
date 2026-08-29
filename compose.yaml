@@ -1,4 +1,5 @@
 services:
+
   exchange-rate-api:
     build:
       context: .
@@ -7,7 +8,31 @@ services:
     ports:
       - "8080:8080"
     environment:
-      EXCHANGE_RATE_API_BASE_URL: ${EXCHANGE_RATE_API_BASE_URL}
       EXCHANGE_RATE_API_ACCESS_KEY: ${EXCHANGE_RATE_API_ACCESS_KEY}
-      APP_SECURITY_USERNAME: ${APP_SECURITY_USERNAME}
-      APP_SECURITY_PASSWORD: ${APP_SECURITY_PASSWORD}
+
+      JWT_ISSUER_URI: http://localhost:9090/realms/exchange-rate
+      JWT_JWK_SET_URI: http://keycloak:8080/realms/exchange-rate/protocol/openid-connect/certs
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - keycloak
+      - redis
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.2
+    container_name: exchange-rate-keycloak
+    command: start-dev --import-realm
+    ports:
+      - "9090:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+
+  redis:
+    image: redis:7-alpine
+    container_name: exchange-rate-redis
+    ports:
+      - "6379:6379"
