@@ -1,32 +1,66 @@
 package com.rho.exchangerate.config;
 
+import com.rho.exchangerate.ratelimit.RateLimitFilter;
+import com.rho.exchangerate.ratelimit.RedisRateLimiter;
 import jakarta.servlet.FilterChain;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+
+import java.time.Instant;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class RateLimitFilterTest {
 
+    private RedisRateLimiter redisRateLimiter;
     private RateLimitFilter rateLimitFilter;
     private FilterChain filterChain;
 
     @BeforeEach
     void setUp() {
-        rateLimitFilter = new RateLimitFilter();
+        redisRateLimiter = mock(RedisRateLimiter.class);
+        rateLimitFilter = new RateLimitFilter(redisRateLimiter);
         filterChain = mock(FilterChain.class);
+
+        Jwt jwt = new Jwt(
+                "test-token",
+                Instant.now(),
+                Instant.now().plusSeconds(300),
+                Map.of("alg", "none"),
+                Map.of(
+                        "sub", "test-subject",
+                        "client_id", "exchange-rate-api"
+                )
+        );
+
+        JwtAuthenticationToken authentication =
+                new JwtAuthenticationToken(jwt);
+
+        SecurityContextHolder
+                .getContext()
+                .setAuthentication(authentication);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
-    void shouldAllowRequestsWithinRateLimit() throws Exception {
+    void shouldAllowRequestWithinRateLimit() throws Exception {
+        when(redisRateLimiter.tryConsume("exchange-rate-api"))
+                .thenReturn(true);
 
         MockHttpServletRequest request =
                 new MockHttpServletRequest();
-
-        request.setRemoteAddr("192.168.1.10");
 
         MockHttpServletResponse response =
                 new MockHttpServletResponse();
@@ -37,7 +71,10 @@ class RateLimitFilterTest {
                 filterChain
         );
 
-        verify(filterChain, times(1))
+        verify(redisRateLimiter)
+                .tryConsume("exchange-rate-api");
+
+        verify(filterChain)
                 .doFilter(request, response);
 
         assertEquals(200, response.getStatus());
@@ -45,42 +82,32 @@ class RateLimitFilterTest {
 
     @Test
     void shouldReturn429WhenRateLimitIsExceeded() throws Exception {
+        when(redisRateLimiter.tryConsume("exchange-rate-api"))
+                .thenReturn(false);
 
         MockHttpServletRequest request =
                 new MockHttpServletRequest();
 
-        request.setRemoteAddr("192.168.1.20");
-
-        for (int i = 0; i < 60; i++) {
-            MockHttpServletResponse allowedResponse =
-                    new MockHttpServletResponse();
-
-            rateLimitFilter.doFilter(
-                    request,
-                    allowedResponse,
-                    filterChain
-            );
-        }
-
-        MockHttpServletResponse blockedResponse =
+        MockHttpServletResponse response =
                 new MockHttpServletResponse();
 
         rateLimitFilter.doFilter(
                 request,
-                blockedResponse,
+                response,
                 filterChain
         );
 
-        assertEquals(429, blockedResponse.getStatus());
+        assertEquals(429, response.getStatus());
+
         assertEquals(
                 "application/json",
-                blockedResponse.getContentType()
+                response.getContentType()
         );
 
-        verify(filterChain, times(60))
-                .doFilter(
-                        eq(request),
-                        any(MockHttpServletResponse.class)
-                );
+        verify(redisRateLimiter)
+                .tryConsume("exchange-rate-api");
+
+        verify(filterChain, never())
+                .doFilter(any(), any());
     }
 }
